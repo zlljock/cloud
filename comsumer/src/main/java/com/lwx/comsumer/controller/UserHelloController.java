@@ -2,6 +2,7 @@ package com.lwx.comsumer.controller;
 
 import org.apache.http.HttpConnection;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +26,7 @@ import java.util.List;
 @RestController
 public class UserHelloController {
     @Autowired
+    @Qualifier("restTemplate")
     private RestTemplate restTemplate;
     @Autowired
     DiscoveryClient discoveryClient;
@@ -47,6 +49,11 @@ public class UserHelloController {
         }
         return "error";
     }
+
+    /**
+     * 没有负载均衡的一定要加详细地址
+     * @return
+     */
     @GetMapping("/hello2")
     public String hello2(){
         List<ServiceInstance> list = discoveryClient.getInstances("provider");
@@ -62,34 +69,13 @@ public class UserHelloController {
         String s = restTemplate.getForObject(sb.toString(), String.class);
         return s;
     }
-    int count = 0;
+
+
+     @Autowired
+     @Qualifier("restTemplate2")
+     private RestTemplate restTemplate2;
     @GetMapping("/hello3")
     public String hello3(){
-        List<ServiceInstance> list = discoveryClient.getInstances("provider");
-        ServiceInstance serviceInstance = list.get((count++)%list.size());
-        String host = serviceInstance.getHost();
-        int port = serviceInstance.getPort();
-        StringBuffer sb =new StringBuffer();
-        sb.append("http://")
-                .append(host)
-                .append(":")
-                .append(port)
-                .append("/hello");
-        HttpURLConnection connection = null;
-        try {
-            URL url = new URL(sb.toString());
-            connection  = (HttpURLConnection)url.openConnection();
-            if (connection.getResponseCode() == 200) {
-                BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                String s = br.readLine();
-                br.close();
-                return s;
-            }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "error";
+       return restTemplate2.getForObject("http://provider/hello",String.class);
     }
 }
