@@ -144,12 +144,19 @@ public class UserHelloController {
         map.add("password","123");
         map.add("id","99");
         restTemplate2.put("http://provider/user1", map);
+
+
         User user = new User();
         user.setId(68);
         user.setUsername("we");
         user.setPassword("123");
-        restTemplate2.put("http://provider/user1", user);
+        restTemplate2.put("http://provider/user2", user);
 
     }
 
+    @GetMapping("/hello9")
+    public void hello9(){
+        restTemplate2.delete("http://provider/user1?id{1}",99);
+        restTemplate2.delete("http://provider/user2/{1}",99);
+    }
 }
